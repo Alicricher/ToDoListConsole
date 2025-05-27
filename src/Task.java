@@ -6,17 +6,13 @@ class Task {
     private int priority;
     private LocalDate creationDate;
     private LocalDateTime completedAt;
-    private Status status;
-
-    public enum Status {
-        НЕВЫПОЛНЕНА, В_ПРОЦЕССЕ, ВЫПОЛНЕНА
-    }
+    private TaskStatus status;
 
     public Task(String name, int priority) {
         this.name = name;
         this.priority = priority;
         this.creationDate = LocalDate.now();
-        this.status = Status.НЕВЫПОЛНЕНА;
+        this.status = TaskStatus.НЕВЫПОЛНЕНА;
         this.completedAt = null;
     }
 
@@ -25,12 +21,12 @@ class Task {
     public int getPriority() { return priority; }
     public void setPriority(int priority) { this.priority = priority; }
     public LocalDate getCreationDate() { return creationDate; }
-    public Status getStatus() { return status; }
+    public TaskStatus getStatus() { return status; }
     public LocalDateTime getCompletedAt() { return completedAt; }
 
-    public void setStatus(Status status) {
+    public void setStatus(TaskStatus status) {
         this.status = status;
-        if (status == Status.ВЫПОЛНЕНА) {
+        if (status == TaskStatus.ВЫПОЛНЕНА) {
             this.completedAt = LocalDateTime.now();
         } else {
             this.completedAt = null;

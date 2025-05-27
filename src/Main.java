@@ -21,7 +21,7 @@ public class Main {
             System.out.println("8. Показать статистику");
             System.out.println("9. Выход");
             System.out.print("\nВыберите действие: ");
-            int choice = Integer.parseInt(scanner.nextLine());
+            int choice = readInt();
 
             switch (choice) {
                 case 1 -> addTask();
@@ -41,11 +41,23 @@ public class Main {
         }
     }
 
+    private static int readInt() {
+        while (true) {
+            if (scanner.hasNextInt()) {
+                return scanner.nextInt();
+            } else {
+                System.out.print("Ошибка ввода. Введите целое число: ");
+                scanner.next();
+            }
+        }
+    }
+
     private static void addTask() {
+        scanner.nextLine();
         System.out.print("Введите название задачи: ");
         String name = scanner.nextLine();
         System.out.print("Введите приоритет (целое число): ");
-        int priority = Integer.parseInt(scanner.nextLine());
+        int priority = readInt();
         tasks.add(new Task(name, priority));
         System.out.println("Задача добавлена!");
     }
@@ -61,10 +73,11 @@ public class Main {
     private static void editTask() {
         int index = getTaskIndex();
         if (index != -1) {
+            scanner.nextLine();
             System.out.print("Введите новое название задачи: ");
             tasks.get(index).setName(scanner.nextLine());
             System.out.print("Введите новый приоритет: ");
-            tasks.get(index).setPriority(Integer.parseInt(scanner.nextLine()));
+            tasks.get(index).setPriority(readInt());
             System.out.println("Задача обновлена.");
         }
     }
@@ -75,7 +88,7 @@ public class Main {
             return;
         }
         System.out.println("1. Сортировать по приоритету\n2. Сортировать по дате создания");
-        int sortChoice = Integer.parseInt(scanner.nextLine());
+        int sortChoice = readInt();
         List<Task> sorted = new ArrayList<>(tasks);
         if (sortChoice == 1) {
             sorted.sort(Comparator.comparing(Task::getPriority).reversed());
@@ -88,19 +101,32 @@ public class Main {
     }
 
     private static void filterTasks() {
-        System.out.println("Список задач отсортированных:");
-        Task.Status targetStatus = Task.Status.В_ПРОЦЕССЕ;
-        List<Task> filtered = tasks.stream()
-                .filter(task -> task.getStatus() == targetStatus)
-                .filter(task -> task.getPriority() >= 1 && task.getPriority() <= 5)
-                .toList();
+        System.out.println("Фильтрация задач:");
+        System.out.println("1. По статусу\n2. По диапазону приоритетов");
+        int filterChoice = readInt();
 
-        for (int i = 0; i < filtered.size(); i++) {
-            System.out.println((i + 1) + ". " + filtered.get(i));
+        if (filterChoice == 1) {
+            System.out.println("Выберите статус (1. НЕВЫПОЛНЕНА, 2. В_ПРОЦЕССЕ, 3. ВЫПОЛНЕНА): ");
+            int statusChoice = readInt();
+            TaskStatus selectedStatus = TaskStatus.values()[statusChoice - 1];
+            tasks.stream()
+                    .filter(task -> task.getStatus() == selectedStatus)
+                    .forEach(task -> System.out.println(task));
+        } else if (filterChoice == 2) {
+            System.out.print("Введите минимальный приоритет: ");
+            int min = readInt();
+            System.out.print("Введите максимальный приоритет: ");
+            int max = readInt();
+            tasks.stream()
+                    .filter(task -> task.getPriority() >= min && task.getPriority() <= max)
+                    .forEach(task -> System.out.println(task));
+        } else {
+            System.out.println("Неверный выбор фильтрации.");
         }
     }
 
     private static void searchTasks() {
+        scanner.nextLine();
         System.out.print("Введите ключевое слово: ");
         String keyword = scanner.nextLine().toLowerCase();
         tasks.stream().filter(t -> t.getName().toLowerCase().contains(keyword))
@@ -111,19 +137,19 @@ public class Main {
         int index = getTaskIndex();
         if (index != -1) {
             System.out.println("Выберите новый статус:\n1. ВЫПОЛНЕНА\n2. В_ПРОЦЕССЕ\n3. НЕВЫПОЛНЕНА");
-            int statusChoice = Integer.parseInt(scanner.nextLine());
-            Task.Status status = Task.Status.values()[statusChoice - 1];
+            int statusChoice = readInt();
+            TaskStatus status = TaskStatus.values()[statusChoice - 1];
             tasks.get(index).setStatus(status);
             System.out.println("Статус задачи обновлён. Время выполнения: " +
-                    ((status == Task.Status.ВЫПОЛНЕНА) ? tasks.get(index).getCompletedAt() : "Отсутствует"));
+                    ((status == TaskStatus.ВЫПОЛНЕНА) ? tasks.get(index).getCompletedAt() : "Отсутствует"));
         }
     }
 
     private static void showStats() {
-        Map<Task.Status, Long> countByStatus = tasks.stream()
+        Map<TaskStatus, Long> countByStatus = tasks.stream()
                 .collect(Collectors.groupingBy(Task::getStatus, Collectors.counting()));
         System.out.println("Статистика задач:");
-        for (Task.Status status : Task.Status.values()) {
+        for (TaskStatus status : TaskStatus.values()) {
             System.out.printf("- %s: %d\n", status, countByStatus.getOrDefault(status, 0L));
         }
         double avgPriority = tasks.stream().mapToInt(Task::getPriority).average().orElse(0);
@@ -132,7 +158,7 @@ public class Main {
 
     private static int getTaskIndex() {
         System.out.print("Введите номер задачи: ");
-        int index = Integer.parseInt(scanner.nextLine()) - 1;
+        int index = readInt() - 1;
         if (index < 0 || index >= tasks.size()) {
             System.out.println("Неверный номер задачи.");
             return -1;
